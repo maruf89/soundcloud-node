@@ -1,0 +1,38 @@
+{
+  "name": "soundcloud-node",
+  "description": "SoundCloud API + Node.js",
+  "version": "0.0.1",
+  "author": "Marius Miliunas <mvmiliunas@gmail.com>",
+  "maintainers": [
+    "Marius Miliunas <mvmiliunas@gmail.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maruf89/soundcloud-node"
+  },
+  "keywords": [
+    "SoundCloud",
+    "API",
+    "node.js"
+  ],
+  "dependencies": {
+    "vows": "0.7.0",
+    "request": "2.x.x",
+    "dysf.utils": "0.0.9"
+  },
+  "main": "./lib/soundclouder",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "vows --spec"
+  },
+  "bugs": {
+    "url": "https://github.com/maruf89/soundcloud-node/issues"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {},
+  "license": "BSD"
+}
