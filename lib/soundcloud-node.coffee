@@ -1,9 +1,14 @@
 https = require("https")
 qs = require("querystring")
-log = require("dysf.utils").logger
 host_api = "api.soundcloud.com"
 host_connect = "https://soundcloud.com/connect"
 
+###*
+ * Returns the config data needed to build a connect url
+ *
+ * @private
+ * @return {Object}  The required data
+###
 _getConfig = ->
     client_id: @client_id
     client_secret: @client_secret
@@ -11,36 +16,54 @@ _getConfig = ->
     response_type: 'code'
     scope: 'non-expiring'
 
-_makeCall = (method, path, access_token, params, callback) ->
+###*
+ * Builds the query to be ready for the request
+ *
+ * @private
+ * @param  {String}   method       GET, POST, PUT or DELETE
+ * @param  {String}   path         The query path
+ * @param  {Object}   params
+ * @param  {Function} callback
+###
+_setupRequest = (method, path, params, callback = ->) ->
+    requestData =
+        method: method.toUpperCase()
+        uri: host_api
 
-    if path and path.indexOf("/") is 0
+    if path[0] isnt '/' then path = '/' + path
 
-        if typeof (params) is "function"
-            callback = params
-            params = {}
+    requestData.path = path
 
-        callback = callback or ->
+    if typeof params is "function"
+        callback = params
+        params = null
 
-        params = params or
-            oauth_token: access_token
-            format: "json"
+    params = params or format: "json"
 
-        _request.call @,
-            method: method
-            uri: host_api
-            path: path
-            qs: params
-        , callback
+    params.oauth_token = @access_token
 
-    else
-        callback(message: "Invalid path: " + path)
-        false
+    requestData.params = params
 
+    _request.call @,
+        method: method
+        uri: host_api
+        path: path
+        qs: params
+    , callback
+
+###*
+ * The function that does the actual query to SoundCloud
+ *
+ * @private
+ * @param  {Object}   data     The request data
+ * @param  {Function} callback
+###
 _request = (data, callback) ->
-    qsdata = (if (data.qs) then qs.stringify(data.qs) else "")
+    params = qs.stringify(data.params)
+
     options =
         hostname: data.uri
-        path: "#{data.path}?#{qsdata}"
+        path: "#{data.path}?#{params}"
         method: data.method
 
     if data.method is "POST"
@@ -49,41 +72,29 @@ _request = (data, callback) ->
             "Content-Type": "application/x-www-form-urlencoded"
             "Content-Length": qsdata.length
 
-    log.debug "Attempting Request: " + options.method + "; " + options.hostname + options.path
-
     req = https.request options, (response) ->
-        log.debug "Request executed: " + options.method + "; " + options.hostname + options.path
-        log.trace "Response http code: " + response.statusCode
-        log.trace "Response headers: " + JSON.stringify(response.headers)
         body = ""
 
         response.on "data", (chunk) ->
             body += chunk
-        
-        #log.trace("chunk: " + chunk);
+
         response.on "end", ->
-            log.trace "Response body: " + body
             try
-                d = JSON.parse(body)
-                
+                data = JSON.parse(body)
+
                 # See http://developers.soundcloud.com/docs/api/guide#errors for full list of error codes
                 unless response.statusCode is 200
-                    log.error "SoundCloud API ERROR: " + response.statusCode
-                    callback d.errors, d
+                    callback data.errors, data
                 else
-                    log.trace "SoundCloud API OK: " + response.statusCode
-                    callback null, d
-            catch e
-                callback e
+                    callback null, data
+            catch err
+                callback err
 
-    req.on "error", (e) ->
-        log.error "For Request: " + options.method + "; " + options.hostname + options.path
-        log.error "Request error: " + e.message
-        callback e
+    req.on "error", (err) ->
+        callback err
 
     if data.method is "POST"
-        log.debug "POST Body: " + qsdata
-        req.write qsdata
+        req.write params
     req.end()
 
 ###*
@@ -119,7 +130,7 @@ module.exports = class SoundCloud
 
     ###
      * Get the url to SoundCloud's authorization/connection page.
-     * 
+     *
      * @param {Object} options
      * @return {String}
     ###
@@ -132,9 +143,9 @@ module.exports = class SoundCloud
 
     ###
      * Perform authorization with SoundCLoud and obtain OAuth token needed
-     * 
+     *
      * for subsequent requests. See http://developers.soundcloud.com/docs/api/guide#authentication
-     * 
+     *
      * @param {String} code sent by the browser based SoundCloud Login that redirects to the redirect_uri
      * @param {Function} callback(error, access_token) No token returned if error != null
     ###
@@ -143,7 +154,7 @@ module.exports = class SoundCloud
             uri: host_api
             path: "/oauth2/token"
             method: "POST"
-            qs:
+            params:
                 client_id: @client_id
                 client_secret: @client_secret
                 grant_type: "authorization_code"
@@ -154,21 +165,19 @@ module.exports = class SoundCloud
 
     ###
      * Make an API call
-     * 
+     *
      * @param {String} path
-     * @param {String} access_token
      * @param {Object} params
      * @param {Function} callback(error, data)
-     * @return {Request}
     ###
     get: (path, params, callback) ->
-        _makeCall.apply(@, ["GET", path, @access_token, params, callback])
+        _setupRequest.apply(@, ["GET", path, params, callback])
 
     post: (path, params, callback) ->
-        _makeCall.apply(@, ["POST", path, @access_token, params, callback])
+        _setupRequest.apply(@, ["POST", path, params, callback])
 
     put: (path, params, callback) ->
-        _makeCall.apply(@, ["PUT", path, @access_token, params, callback])
+        _setupRequest.apply(@, ["PUT", path, params, callback])
 
     delete: (path, params, callback) ->
-        _makeCall.apply(@, ["DELETE", path, @access_token, params, callback])
+        _setupRequest.apply(@, ["DELETE", path, params, callback])
