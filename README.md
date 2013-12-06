@@ -1,14 +1,16 @@
-Forked off of soundclouder.js [![Build Status](https://api.travis-ci.org/khilnani/soundclouder.js.png?branch=master)](https://travis-ci.org/khilnani/soundclouder.js)
+Soundcloud-node
 ===============
 
 Provides seamless modular support for working with SoundCloud and Nodejs
 
+Enhanced so you need to do less
 
-SoundCloud APIs Implemented
+
+SoundCloud APIs
 ===============
-- Connection/Authorization Url
-- OAuth Authorization (/oauth2/token)
-- General GET, PUT, POST and DELETE.
+- Connection + Authorize User
+- OAuth Authorization
+- General GET, PUT, POST and DELETE request
 
 Usage
 ==============
@@ -19,14 +21,15 @@ var SoundCloudAPI = require("soundcloud-node");
 // instantiate the client
 var client = SoundCloudAPI(client_id, client_secret, redirect_uri);
 
-// redirect to the url
+// Connect User
 var oauthInit = function(req, res) {
 	var url = client.getConnectUrl();
 
     res.writeHead(301, Location: url);
     res.end();
-}
+};
 
+// Get OAuth Token
 var oauthHandleToken = function(req, res) {
 	var query = req.query;
 
@@ -37,7 +40,7 @@ var oauthHandleToken = function(req, res) {
             callback(null, res);
         }
     });
-}
+};
 </pre>
 <pre>
 client.get('/tracks/' + track_id, function (data) {
@@ -46,16 +49,25 @@ client.get('/tracks/' + track_id, function (data) {
 </pre>
 
 
-Links
+Support
 ============
 - Application Setup - http://developers.soundcloud.com/docs/api/guide#authentication
 - Error Codes - http://developers.soundcloud.com/docs/api/guide#errors
 
 
-Installation
+To Install
 ============
 
-Global
---------- 
+NPM
+---------
 - Run: <code>sudo npm install soundcloud-node -g</code>
-- Usually installed at - /usr/local/lib/node_modules/soundcloud-node
+
+Github
+---------
+- Run: <code>git clone git@github.com:maruf89/soundcloud-node.git</code>
+
+Extra
+============
+Forked off of soundclouder.js [![Build Status](https://api.travis-ci.org/khilnani/soundclouder.js.png?branch=master)](https://travis-ci.org/khilnani/soundclouder.js)
+
+
