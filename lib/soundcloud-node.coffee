@@ -44,12 +44,7 @@ _setupRequest = (method, path, params, callback = ->) ->
 
     requestData.params = params
 
-    _request.call @,
-        method: method
-        uri: host_api
-        path: path
-        qs: params
-    , callback
+    _request.apply(@, [requestData, callback])
 
 ###*
  * The function that does the actual query to SoundCloud
@@ -140,14 +135,14 @@ module.exports = class SoundCloud
         host_connect + "?" + ((if options then qs.stringify(options) else ""))
 
     setToken: (@access_token) ->
+        access_token
 
     ###
-     * Perform authorization with SoundCLoud and obtain OAuth token needed
+     * Using the provided code from the successful SoundCloud connect page, we send that
+     * back to soundcloud to get the access_token, and we save it if it returns successful
      *
-     * for subsequent requests. See http://developers.soundcloud.com/docs/api/guide#authentication
-     *
-     * @param {String} code sent by the browser based SoundCloud Login that redirects to the redirect_uri
-     * @param {Function} callback(error, access_token) No token returned if error != null
+     * @param {String} code        code returned by SoundCloud
+     * @param {Function} callback  provides (error, response)
     ###
     getToken: (code, callback) ->
         options =
@@ -161,7 +156,10 @@ module.exports = class SoundCloud
                 redirect_uri: @redirect_uri
                 code: code
 
-        _request.apply(@, [options, callback])
+        _request.apply(@, [options, (err, resp) =>
+            @setToken(resp.access_token) if resp.access_token
+            callback.apply(this, arguments)
+        ])
 
     ###
      * Make an API call
