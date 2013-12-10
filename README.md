@@ -32,6 +32,7 @@ var oauthInit = function(req, res) {
 };
 
 // Get OAuth Token
+// callback function from the connect url
 var oauthHandleToken = function(req, res) {
 	var query = req.query;
 
@@ -39,7 +40,7 @@ var oauthHandleToken = function(req, res) {
         if (err)
             callback(err);
         else {
-            callback(null, res);
+            callback(null, tokens);
         }
     });
 };

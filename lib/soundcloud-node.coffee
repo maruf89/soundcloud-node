@@ -36,10 +36,10 @@ _user_id = -> user_id
  * @type {[type]}
 ###
 variables =
-    '{id}': _user_id()
+    '{id}': _user_id
 
 _applyVariables = (path) ->
-    path = path.replace(pattern, value) for pattern, value of variables
+    path = path.replace(pattern, value()) for pattern, value of variables
     return path
 
 ###*
