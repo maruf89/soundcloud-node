@@ -105,7 +105,7 @@ To Install
 
 NPM
 ---------
-- Run: <code>sudo npm install soundcloud-node -g</code>
+- Run: <code>npm install soundcloud-node -g</code>
 
 Github
 ---------
