@@ -23,20 +23,20 @@ var SoundCloudAPI = require("soundcloud-node");
 // instantiate the client
 var client = new SoundCloudAPI(client_id, client_secret, redirect_uri);
 
-// Connect User
+// Connect User - Assuming you are using Express 
 var oauthInit = function(req, res) {
-	var url = client.getConnectUrl();
+    var url = client.getConnectUrl();
 
-    res.writeHead(301, Location: url);
+    res.writeHead(301, url);
     res.end();
 };
 
 // Get OAuth Token
 // callback function from the connect url
 var oauthHandleToken = function(req, res) {
-	var query = req.query;
+    var query = req.query;
 
-	client.getToken(query.code, function(err, tokens) {
+    client.getToken(query.code, function(err, tokens) {
         if (err)
             callback(err);
         else {
@@ -83,7 +83,7 @@ Get users favorite tracks
 -------------------------
 <pre>
 client.get('/users/273281/favorites', function (data) {
-	console.log(data.title);
+    console.log(data.title);
 });
 </pre>
 Or if the user id is set, it will automatically parse {id} into your user_id
